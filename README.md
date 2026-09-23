@@ -29,53 +29,69 @@
 
 ## Chunking Strategy
 
-**Chunk size:**
-**Overlap:**
+**Chunk size:** 800 characters, used only as a ceiling — most chunks are much shorter than this
+**Overlap:** 120 characters, used only when a section has to be force-split
 
-<!-- What about YOUR documents made you pick these numbers? Short posts and
-     long sectioned guides don't want the same chunking, and "800 seemed
-     reasonable" earns nothing. Point at something you noticed when you read
-     the documents in Milestone 1.
+Every guide is the same shape: a `#` title, then six or seven `##` sections
+("Getting there", "Eat and drink", "When to go"...) each 150-500 characters.
+The old fixed 800-char window kept cutting mid-section — gluing "Getting
+there" onto "Getting around," or slicing an answer in half. Each `##` section
+is already a complete thought, so I chunk on headers instead: one chunk per
+section, heading included. Chunk size/overlap only matter as a fallback for
+the rare oversized section, splitting on paragraphs first, then characters.
 
-     If you changed your mind partway through, say so and say why. That's worth
-     more than pretending you got it right first time.
-
-     Milestone 3. -->
+Went with this from the start — no fixed-size baseline to walk back from.
 
 ## Sample Chunks
 
-<!-- Five chunks, pasted as text. Label each one and name the file it came from
-     AND the function that produced it — the grader checks your code against
-     what you claim here.
+<!-- `python app.py chunks -n 5` -->
 
-     `python app.py chunks -n 5` prints all three for you. Copy them straight
-     across.
-
-     Milestone 3. -->
-
-**Chunk 1** — source: `` — produced by: ``
+**Chunk 1** — source: `guide_accessibility.md#0` — produced by: `chunker.py::split_documents`
 
 ```
+# Getting around the region with limited mobility
+
+An honest assessment rather than a promotional one. Some of these places are
+difficult and it is better to know in advance.
 ```
 
-**Chunk 2** — source: `` — produced by: ``
+**Chunk 2** — source: `guide_corry_vale.md#6` — produced by: `chunker.py::split_documents`
 
 ```
+## When to go
+
+May to September. Outside those months the pub in the third village closes, the farm shop reduces its hours, and several footpaths become genuinely boggy rather than merely wet. The road is not gritted above the second village and is impassable in snow.
 ```
 
-**Chunk 3** — source: `` — produced by: ``
+**Chunk 3** — source: `guide_givens_mill.md#3` — produced by: `chunker.py::split_documents`
 
 ```
+## Eat and drink
+
+A tearoom attached to the mill, open 10 to 4 daily except Tuesdays, which sells bread made from the flour ground twenty metres away and is the reason most people come. One pub, food served lunchtimes and Thursday to Saturday evenings.
 ```
 
-**Chunk 4** — source: `` — produced by: ``
+**Chunk 4** — source: `guide_kestrelford.md#6` — produced by: `chunker.py::split_documents`
 
 ```
+## When to go
+
+Late spring and early autumn. The Saturday market runs year-round but is much reduced from November to February. August is busy with walkers. The single-track approach road is genuinely difficult in snow and the town can be cut off for a day or two most winters.
 ```
 
-**Chunk 5** — source: `` — produced by: ``
+**Chunk 5** — source: `guide_regional_transport.md#1` — produced by: `chunker.py::split_documents`
 
 ```
+## The railway
+
+The line runs along the river valley, connecting Brightwater to the regional
+hub in 50 minutes. Eleven services a day on weekdays, six on Sundays. The line
+north of Brightwater closed in 1963 and everything beyond it is bus or car.
+
+Tickets are cheaper booked the day before than on the day, and considerably
+cheaper than that booked a week ahead. There is no ticket office at
+Brightwater station outside weekday mornings; the machine on the platform takes
+cards only.
 ```
 
 ## Sample Answer

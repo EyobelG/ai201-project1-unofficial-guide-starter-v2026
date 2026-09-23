@@ -22,10 +22,13 @@ to it, write down what you saw, and move on. That's a real observation about
 your pipeline, not giving up.
 """
 
+import re
 from dataclasses import dataclass
 
 import config
 from ingest import Document
+
+_HEADER_RE = re.compile(r"(?m)^#{1,6}\s+.*$")
 
 
 @dataclass
@@ -80,24 +83,93 @@ def fallback_split(
     return chunks
 
 
+def _split_into_sections(text: str) -> list[str]:
+    """Cut a document at its markdown headers, keeping each heading with the
+    text that follows it until the next header."""
+    matches = list(_HEADER_RE.finditer(text))
+    if not matches:
+        return [text.strip()] if text.strip() else []
+
+    sections = []
+    if matches[0].start() > 0:
+        lead = text[: matches[0].start()].strip()
+        if lead:
+            sections.append(lead)
+
+    for i, m in enumerate(matches):
+        start = m.start()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        section = text[start:end].strip()
+        if section:
+            sections.append(section)
+
+    return sections
+
+
+def _split_oversized_section(section: str, chunk_size: int, overlap: int) -> list[str]:
+    """A section too long for one chunk: split on paragraph breaks first, then
+    fall back to a character window with overlap for any paragraph that's
+    still too long on its own."""
+    paragraphs = [p.strip() for p in section.split("\n\n") if p.strip()]
+    pieces: list[str] = []
+    current = ""
+
+    for para in paragraphs:
+        candidate = f"{current}\n\n{para}" if current else para
+        if len(candidate) <= chunk_size:
+            current = candidate
+            continue
+
+        if current:
+            pieces.append(current)
+        if len(para) <= chunk_size:
+            current = para
+        else:
+            start = 0
+            while start < len(para):
+                pieces.append(para[start : start + chunk_size].strip())
+                start += chunk_size - overlap
+            current = ""
+
+    if current:
+        pieces.append(current)
+
+    return [p for p in pieces if p]
+
+
 def split_documents(documents: list[Document]) -> list[Chunk]:
     """
-    Split documents into chunks. ⚠️ REPLACE THE BODY OF THIS IN MILESTONE 3.
+    Splits on `#`/`##` headers instead of a fixed character count.
 
-    Right now it just calls the fallback. That is the plain, generic behaviour
-    the brief is talking about.
-
-    When you write your own strategy, set `produced_by` to
-    "chunker.py::split_documents" so your README's Sample Chunks section names
-    the right function. `app.py chunks` prints that string for you.
-
-    Things worth thinking about before you write any code:
-      - Are your documents short posts or long guides?
-      - Is the useful information in one sentence, or spread over a paragraph?
-      - Would splitting on paragraph breaks keep more thoughts intact than
-        splitting on a character count?
+    Each guide here is short and already broken into sections ("Getting
+    there", "Eat and drink", ...) that are 150-500 chars each — a fixed
+    800-char window kept cutting mid-section. One chunk per section fixes
+    that. Oversized sections fall back to paragraph/char splitting.
     """
-    return fallback_split(documents)
+    chunk_size = config.CHUNK_SIZE
+    overlap = config.CHUNK_OVERLAP
+
+    chunks: list[Chunk] = []
+    for doc in documents:
+        index = 0
+        for section in _split_into_sections(doc.text):
+            pieces = (
+                [section]
+                if len(section) <= chunk_size
+                else _split_oversized_section(section, chunk_size, overlap)
+            )
+            for piece in pieces:
+                chunks.append(
+                    Chunk(
+                        text=piece,
+                        source=doc.source,
+                        index=index,
+                        produced_by="chunker.py::split_documents",
+                    )
+                )
+                index += 1
+
+    return chunks
 
 
 def describe(chunks: list[Chunk]) -> str:
