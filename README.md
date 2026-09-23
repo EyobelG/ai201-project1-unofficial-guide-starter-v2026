@@ -96,30 +96,37 @@ cards only.
 
 ## Sample Answer
 
-<!-- One complete question and answer, pasted as text, with the source line
-     visible. Milestone 4. -->
-
-**Question:**
+**Question:** How long is the Elder Ness shingle walk to the lighthouse?
 
 **Answer:**
 
 ```
+The Elder Ness shingle walk to the lighthouse takes 25 minutes.
+
+Source: guide_walking.md (also mentioned in guide_elder_ness.md)
 ```
 
-**My relevance cutoff:**
+Sources retrieved: `guide_elder_ness.md`, `guide_halden_bay.md`, `guide_walking.md`
 
-<!-- The number you set in config.py, and how you got there.
+**My relevance cutoff:** 0.6 (the starter default — kept as is)
 
-     You ran five questions your corpus covers and the five in OUT_OF_SCOPE
-     that it clearly doesn't, and wrote down the best distance for each. What
-     did those two groups look like? Where was the gap? Put the actual numbers
-     here — the table below wants all ten rows.
-
-     Milestone 4. -->
+Ran my five questions and the five `OUT_OF_SCOPE` ones through `retrieve`,
+top-k 5. Best in-corpus distance was 0.452, worst out-of-scope was 0.754 —
+clean gap, no overlap. 0.6 sits right in the middle of that gap already, so
+I didn't touch it.
 
 | Question | In corpus? | Best distance |
 |---|---|---|
-|  |  |  |
+| By what month do the coastal businesses begin closing and the days get short? | yes | 0.365 |
+| What is the regional hub with 180,000 people? | yes | 0.452 |
+| How long does driving from Brightwater to Corry Vale take on a good road? | yes | 0.314 |
+| How long is the Elder Ness shingle walk to the lighthouse? | yes | 0.365 |
+| If I am going to Halden Bay in August, what time should I arrive by? | yes | 0.256 |
+| What is the capital of Mongolia? | no | 0.754 |
+| How do I change the oil in a diesel engine? | no | 0.892 |
+| Who won the 1994 World Cup? | no | 0.899 |
+| What is the recommended dosage of ibuprofen for a headache? | no | 0.846 |
+| How do I write a for loop in Rust? | no | 0.813 |
 
 ## How I Used AI
 
