@@ -183,11 +183,16 @@ def search(
     top_k: int | None = None,
     corpus: str | None = None,
     variant: str = "default",
+    source: str | None = None,
 ) -> list[Result]:
     """
     Retrieve the chunks closest in meaning to a question.
 
     Returns them nearest-first, each with its distance.
+
+    Pass `source` to only search one document: it matches exactly against
+    the filename stored in each chunk's metadata. Leave it unset to search
+    everything. This is the metadata filtering stretch feature.
     """
     top_k = top_k or config.TOP_K
     name = config.collection_name(corpus, variant)
@@ -202,6 +207,7 @@ def search(
     raw = collection.query(
         query_embeddings=embed([question]),
         n_results=min(top_k, collection.count()),
+        where={"source": source} if source else None,
     )
 
     results: list[Result] = []

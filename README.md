@@ -1,6 +1,6 @@
 # The Unofficial Guide
 
-<!-- Replace this line with your name and which corpus you picked. -->
+Eyobel Gebre — corpus: city_guides
 
 > **This file is your submission.** Fill it in as you go — most sections get
 > written during the milestone that produces them, not at the end.
@@ -21,11 +21,12 @@
 
 ## What This Does
 
-<!-- Three or four sentences. Which corpus you picked, and the kinds of
-     questions your system answers. Write it for someone who has never seen
-     this repo.
-
-     Milestone 5. -->
+This is a small RAG system built on the `city_guides` corpus: fourteen
+travel guides for fictional towns, each broken into sections like "Getting
+there," "Eat and drink," and "When to go." Ask it something a guide would
+actually cover, like travel times, opening months, or walk lengths, and it
+retrieves the relevant section and answers from it, naming the file. Ask it
+something the corpus doesn't cover and it says so instead of guessing.
 
 ## Chunking Strategy
 
@@ -44,7 +45,6 @@ Went with this from the start — no fixed-size baseline to walk back from.
 
 ## Sample Chunks
 
-<!-- `python app.py chunks -n 5` -->
 
 **Chunk 1** — source: `guide_accessibility.md#0` — produced by: `chunker.py::split_documents`
 
@@ -108,11 +108,11 @@ Source: guide_walking.md (also mentioned in guide_elder_ness.md)
 
 Sources retrieved: `guide_elder_ness.md`, `guide_halden_bay.md`, `guide_walking.md`
 
-**My relevance cutoff:** 0.6 (the starter default — kept as is)
+**My relevance cutoff:** 0.6 (the starter default, kept as is)
 
 Ran my five questions and the five `OUT_OF_SCOPE` ones through `retrieve`,
-top-k 5. Best in-corpus distance was 0.452, worst out-of-scope was 0.754 —
-clean gap, no overlap. 0.6 sits right in the middle of that gap already, so
+top-k 5. Best in-corpus distance was 0.452, worst out-of-scope was 0.754.
+Clean gap, no overlap. 0.6 sits right in the middle of that gap already, so
 I didn't touch it.
 
 | Question | In corpus? | Best distance |
@@ -130,23 +130,31 @@ I didn't touch it.
 
 ## How I Used AI
 
-<!-- Two specific moments. For each: what you asked for, what came back, and
-     what you changed about it.
+**1.** After writing the Milestone 3 chunker, I asked Claude to check my
+chunker.py and README against the milestone's actual checklist before I
+committed. It flagged that my rationale never cited the starter's real
+baseline numbers (the `describe()` output), just my own city_guides
+observation. I decided that was fine since city_guides was the only corpus
+I touched — the other corpora's numbers (88/88, the 2-char chunk) aren't
+mine to cite.
 
-     "I asked Claude to write the chunking function from my notes. It ignored
-     the overlap, so I added that myself" is the level of detail we're after.
-     "I used AI to help me code" is not.
+**2.** For `split_documents` in chunker.py, I asked Claude to help me work
+out a header-splitting approach instead of the fixed-size window. I adjusted
+the oversized-section fallback myself once I saw it was gluing paragraphs
+together wrong.
 
-     Milestone 5. -->
+## Stretch: Metadata Filtering
 
-**1.**
+`store.py::search` now takes a `source` argument and passes it to Chroma as
+a `where={"source": ...}` filter, so a query can be scoped to one guide
+instead of the whole corpus. Wired up as `--source FILENAME` on both
+`app.py retrieve` and `app.py ask`.
 
-**2.**
-
-<!-- ── Stretch features ─────────────────────────────────────────────────────
-     Doing one? Say so here BEFORE you start. A feature this README never
-     claims earns nothing.
-     ───────────────────────────────────────────────────────────────────────── -->
+Example: "How long is the walk to the lighthouse?" with no filter pulls its
+best match (distance 0.391) from whichever guide covers it best. Add
+`--source guide_halden_bay.md` and every result comes back restricted to
+that one file, best distance 0.456. Worse, since it can't reach for the
+guide that actually answers it best (Elder Ness), but correctly scoped.
 
 ---
 
