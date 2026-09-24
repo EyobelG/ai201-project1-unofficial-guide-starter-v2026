@@ -232,11 +232,11 @@ How do I write a for loop in Rust?          best distance 0.813  refused
 
 | # | Criterion | Verdict | How I decided |
 |---|---|---|---|
-| 1 |  |  |  |
-| 2 |  |  |  |
-| 3 |  |  |  |
-| 4 |  |  |  |
-| 5 |  |  |  |
+| 1 | Retrieved chunk contains the answer | MET | Target 4/5, ran 5/5 all three runs. Checked each answer against the question-level pass/fail rows in `run_2026-09-23_2103_before.md` — every one of the five in-corpus questions had its answer text traceable to the retrieved chunk in all three runs, no run dipping below 4. |
+| 2 | Every answer names a source | MET | Target 5/5, ran 5/5 all three runs. Read all 15 real answer instances (5 questions × 3 runs) in the run log — every answer ends with an explicit `Source:` or inline filename citation, no run missing one. |
+| 3 | Gate stops out-of-corpus questions | MET | Target 4/5, ran 5/5 all three runs. This criterion is deterministic (fixed 0.6 cutoff against fixed out-of-scope questions), so `check_out_of_scope` produced the same refusal table each run — all five out-of-scope questions refused, best distance 0.754 vs. in-corpus worst 0.452, clean gap either side of the cutoff. |
+| 4 | Sampled chunks read as a complete thought | MET | Target 4/5, ran 5/5 all three runs. Same deterministic case — the five sample chunks are the ones pre-selected in the Milestone 3 section (README lines ~49-95) and don't change per run, so I re-read them once and confirmed each is a self-contained section, not a fragment. |
+| 5 | First named source actually contains the answer | MET | Target 4/5, ran 5/5 all three runs. Cross-referenced each question's `expects` value (from `questions.py`) against the first-named source in that run's answer, for all 5 questions × 3 runs — first source matched the expected document every time. |
 
 ## Diagnoses
 
