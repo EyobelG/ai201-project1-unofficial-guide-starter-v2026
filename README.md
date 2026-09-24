@@ -178,15 +178,46 @@ guide that actually answers it best (Elder Ness), but correctly scoped.
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+| 1. Retrieved chunk contains the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Sampled chunks read as a complete thought | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 5. First named source actually contains the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
 
-<!-- Underneath, paste the REAL output for each criterion from one of your
-     runs — the actual text your system produced, not a description of it.
-     Name the file and function that produced it. -->
+Produced by `run_eval.py::main` and `run_eval.py::check_out_of_scope`, from
+`results/run_2026-09-23_2103_before.md`. Criteria 3 and 4 are one
+deterministic pass each (gate cutoff, and the 5 chunks sampled in Milestone 3),
+so the same number is repeated across the three run columns.
+
+Question by question, all three runs (5/5 each time):
+
+```
+By what month do the coastal businesses begin closing and the days get short?
+  -> By November, the coastal businesses begin closing and the days are short
+     (source: guide_seasons.md).
+What is the regional hub with 180,000 people?
+  -> The regional hub with 180,000 people is Marchwood. This information
+     comes from `guide_marchwood.md`.
+How long does driving from Brightwater to Corry Vale take on a good road?
+  -> Driving from Brightwater takes 35 minutes on a good road as far as the
+     valley mouth. Source: guide_corry_vale.md
+How long is the Elder Ness shingle walk to the lighthouse?
+  -> The Elder Ness shingle walk to the lighthouse is 25 minutes long.
+     Sources: `guide_walking.md` and `guide_elder_ness.md`
+If I am going to Halden Bay in August, what time should I arrive by?
+  -> If you are going to Halden Bay in August, you should arrive before 10am
+     or plan to use the overflow lot (guide_seasons.md).
+```
+
+Out-of-scope gate (`run_eval.py::check_out_of_scope`), refused 5 of 5:
+
+```
+What is the capital of Mongolia?            best distance 0.754  refused
+How do I change the oil in a diesel engine? best distance 0.892  refused
+Who won the 1994 World Cup?                 best distance 0.899  refused
+What is the recommended dosage of ibuprofen for a headache? 0.846  refused
+How do I write a for loop in Rust?          best distance 0.813  refused
+```
 
 ## Verdicts
 
