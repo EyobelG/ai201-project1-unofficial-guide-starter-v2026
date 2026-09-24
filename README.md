@@ -232,11 +232,11 @@ How do I write a for loop in Rust?          best distance 0.813  refused
 
 | # | Criterion | Verdict | How I decided |
 |---|---|---|---|
-| 1 | Retrieved chunk contains the answer | MET | Target 4/5, ran 5/5 all three runs. Checked each answer against the question-level pass/fail rows in `run_2026-09-23_2103_before.md` — every one of the five in-corpus questions had its answer text traceable to the retrieved chunk in all three runs, no run dipping below 4. |
-| 2 | Every answer names a source | MET | Target 5/5, ran 5/5 all three runs. Read all 15 real answer instances (5 questions × 3 runs) in the run log — every answer ends with an explicit `Source:` or inline filename citation, no run missing one. |
-| 3 | Gate stops out-of-corpus questions | MET | Target 4/5, ran 5/5 all three runs. This criterion is deterministic (fixed 0.6 cutoff against fixed out-of-scope questions), so `check_out_of_scope` produced the same refusal table each run — all five out-of-scope questions refused, best distance 0.754 vs. in-corpus worst 0.452, clean gap either side of the cutoff. |
-| 4 | Sampled chunks read as a complete thought | MET | Target 4/5, ran 5/5 all three runs. Same deterministic case — the five sample chunks are the ones pre-selected in the Milestone 3 section (README lines ~49-95) and don't change per run, so I re-read them once and confirmed each is a self-contained section, not a fragment. |
-| 5 | First named source actually contains the answer | MET | Target 4/5, ran 5/5 all three runs. Cross-referenced each question's `expects` value (from `questions.py`) against the first-named source in that run's answer, for all 5 questions × 3 runs — first source matched the expected document every time. |
+| 1 | Retrieved chunk contains the answer | MET | Wanted 4/5, got 5/5 all three times. I went through `run_2026-09-23_2103_before.md` and for each of the five questions checked that the actual answer text showed up in the chunk that got retrieved — it did, every run. |
+| 2 | Every answer names a source | MET | Wanted 5/5, got 5/5 all three times. Read all 15 answers (5 questions, 3 runs) and every single one ends with a `Source:` line or names the file inline. Never had to go looking for a citation. |
+| 3 | Gate stops out-of-corpus questions | MET | Wanted 4/5, got 5/5 all three times, and honestly this one's a gimme — the cutoff is fixed and the questions are fixed, so `check_out_of_scope` gives the same result every run. Best in-corpus distance was 0.452, worst out-of-scope was 0.754. That's a wide gap, not a close call. |
+| 4 | Sampled chunks read as a complete thought | MET | Wanted 4/5, got 5/5. Also deterministic — these are the same five chunks I sampled back in Milestone 3, so I just reread them and confirmed none of them cut off mid-thought. |
+| 5 | First named source actually contains the answer | MET | Wanted 4/5, got 5/5 all three times. Went question by question and checked that the source named first in the answer matches the `expects` field in `questions.py`. It lined up every time, 15 for 15. |
 
 ## Diagnoses
 
@@ -257,6 +257,21 @@ How do I write a for loop in Rust?          best distance 0.813  refused
      low, and which one you'd tighten and to what.
 
      Milestone 3. -->
+
+Didn't miss anything, so no failure stages to trace here.
+
+But I'll be honest — 4/5 was too soft a target for criteria 1, 3, 4, and 5. I
+picked it because I expected at least one question to be flaky, but the corpus
+is tiny (five short guides) and well-separated (0.452 worst in-corpus distance
+vs. 0.754 best out-of-scope), so there wasn't really a failure mode that costs
+you exactly one question. It either works or it doesn't, and three identical
+5/5 runs back that up — no variance for the 4/5 buffer to actually catch.
+
+If I redid it, I'd tighten criterion 1 to 5/5. It's the one that's actually
+doing generation work every run instead of just replaying a fixed cutoff or a
+pre-picked sample (that's 3 and 4), so three perfect runs there means the most.
+It's also the one most likely to catch a real miss once the corpus gets bigger
+than five documents.
 
 ## The Improvement
 
