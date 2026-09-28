@@ -449,9 +449,9 @@ Source: guide_seasons.md
 
 **Did it help?** Not on the criteria: all five came out the same as Before and
 After. I checked criterion 1 by running `store.search` directly with top-k 3.
-The answer chunk was in the top 3 for all five questions, and for four of five
-it was ranked first (for the "November" question it appears at ranks 1 and 3).
-So the answer chunk did not need ranks 4 and 5. Retrieval now hands the model 2
+The answer chunk was in the top 3 for all five questions, and ranked first
+for every one (for the "November" question it appears at ranks 1 and 3). So
+the answer chunk did not need ranks 4 and 5. Retrieval now hands the model 2
 to 3 chunks instead of 4 to 5, so answers cite fewer files (the Marchwood
 answer now retrieves 2 sources instead of 4).
 
