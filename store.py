@@ -18,6 +18,7 @@ rest of the project if they were wrong:
 """
 
 import os
+import re
 import shutil
 from dataclasses import dataclass
 
@@ -28,6 +29,7 @@ from dataclasses import dataclass
 os.environ.setdefault("ANONYMIZED_TELEMETRY", "False")
 
 import chromadb  # noqa: E402
+from rank_bm25 import BM25Okapi  # noqa: E402
 
 import config
 from chunker import Chunk
@@ -178,6 +180,33 @@ def build_index(
     return len(chunks)
 
 
+def _tokenize(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+", text.lower())
+
+
+def _fuse_with_bm25(question, docs, metas, dists, top_k, k=60):
+    """Reciprocal rank fusion of the vector ranking (already nearest-first)
+    and a BM25 keyword ranking over the same chunks. Distances are left as
+    the cosine values so the relevance gate still reads vector distance."""
+    bm25 = BM25Okapi([_tokenize(d) for d in docs])
+    scores = bm25.get_scores(_tokenize(question))
+    bm25_order = sorted(range(len(docs)), key=lambda i: scores[i], reverse=True)
+
+    fused = [0.0] * len(docs)
+    for rank, i in enumerate(range(len(docs))):
+        fused[i] += 1 / (k + rank + 1)
+    for rank, i in enumerate(bm25_order):
+        if scores[i] > 0:
+            fused[i] += 1 / (k + rank + 1)
+
+    order = sorted(range(len(docs)), key=lambda i: fused[i], reverse=True)[:top_k]
+    # The gate reads the best vector distance in the returned set, so the
+    # nearest vector chunk always stays in even if fusion would drop it.
+    if 0 not in order:
+        order = order[: top_k - 1] + [0]
+    return [docs[i] for i in order], [metas[i] for i in order], [dists[i] for i in order]
+
+
 def search(
     question: str,
     top_k: int | None = None,
@@ -204,16 +233,20 @@ def search(
             f"No index called '{name}'. Run `python app.py index` first."
         ) from exc
 
+    where = {"source": source} if source else None
+    pool = collection.count() if config.HYBRID else min(top_k, collection.count())
     raw = collection.query(
         query_embeddings=embed([question]),
-        n_results=min(top_k, collection.count()),
-        where={"source": source} if source else None,
+        n_results=pool,
+        where=where,
     )
+    docs, metas, dists = raw["documents"][0], raw["metadatas"][0], raw["distances"][0]
+
+    if config.HYBRID:
+        docs, metas, dists = _fuse_with_bm25(question, docs, metas, dists, top_k)
 
     results: list[Result] = []
-    for text, meta, distance in zip(
-        raw["documents"][0], raw["metadatas"][0], raw["distances"][0]
-    ):
+    for text, meta, distance in zip(docs, metas, dists):
         results.append(
             Result(
                 text=text,
