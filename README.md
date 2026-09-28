@@ -447,6 +447,18 @@ If you are going to Halden Bay in August, you should arrive before 10am.
 Source: guide_seasons.md
 ```
 
+Side by side, per-question scorer passes out of 15 (5 questions x 3 runs) and
+the other numbers from the three logs:
+
+| | Before (top-k 5) | After (hybrid, top-k 5) | After 2 (hybrid, top-k 3) |
+|---|---|---|---|
+| Criterion 1 (answer chunk retrieved) | 5/5 x3 | 5/5 x3 | 5/5 x3 |
+| Criterion 2 (source named) | 5/5 x3 | 5/5 x3 | 5/5 x3 |
+| Criterion 3 (gate refusals) | 5/5 | 5/5 | 5/5 |
+| Criterion 5 (first source correct) | 5/5 x3 | 5/5 x3 | 5/5 x3 |
+| Scorer passes | 15/15 | 14/15 | 15/15 |
+| Sources retrieved per question | 3 to 4 | 2 to 4 | 2 to 3 |
+
 **Did it help?** Not on the criteria: all five came out the same as Before and
 After. I checked criterion 1 by running `store.search` directly with top-k 3.
 The answer chunk was in the top 3 for all five questions, and ranked first
