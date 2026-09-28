@@ -143,19 +143,29 @@ out a header-splitting approach instead of the fixed-size window. I adjusted
 the oversized-section fallback myself once I saw it was gluing paragraphs
 together wrong.
 
-**3.** In Unit 2 I asked Claude to write `store.py::_fuse_with_bm25` for the
-hybrid search improvement. Its first version could push the nearest vector
-chunk out of the top 5, which changed the gate's best distance for the
-first question (0.365 became 0.462). We caught
-that by printing best distance with `HYBRID` on and off, and I had it keep
-the top vector chunk in the result set. I then reran the full eval myself and
-committed the results file.
+**3.** For the Unit 2 improvement, I asked Claude to help me pick one. My
+Diagnoses section said I missed nothing, so no failure pointed at a fix.
+Claude walked through the options: a second chunking strategy had little room
+because my chunker already splits on headers, and tuning the gate gained
+nothing because 0.6 already sits in the gap between 0.452 and 0.754. It
+suggested hybrid search because my criterion 1 rationale names exact figures
+("35 minutes", "before 10am"), which is where keyword matching could help. It
+also warned me up front that pass counts would probably not change, so I
+should judge the result by where the answer chunk ranks. I made the final
+call to go with hybrid search.
 
-**4.** I asked Claude to read my Verdicts and Diagnoses before I moved on. It
-found that I had written "best in-corpus" and "worst out-of-scope" backwards
-in two places, and I fixed them. It also pointed out that with no miss in
-Before, the improvement could not be a repair, so I framed it in the
-README as a test of criterion 1's exact-figure risk.
+**4.** Claude wrote the first version of `store.py::_fuse_with_bm25`. When it
+tested the function with `HYBRID` on and off, it found that the function could
+push the nearest vector chunk out of the top 5, which raised the gate's best
+distance on the first question from 0.365 to 0.462. Claude fixed that by
+always keeping the top vector chunk, so the gate numbers stay comparable with
+Before. Claude ran `run_eval.py --label after`, and I committed the results.
+
+**5.** I asked Claude to review my Verdicts and Diagnoses. It noticed I had
+"best in-corpus" and "worst out-of-scope" swapped in two places and fixed the
+wording at my request. It also identified that the one After failure (Halden
+Bay, "10 am" against "10am") came from the scorer's string match and not from
+retrieval, and wrote that up as a scorer issue.
 
 ## Stretch: Metadata Filtering
 
