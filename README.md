@@ -324,20 +324,25 @@ guide_regional_transport.md, guide_seasons.md. Best distance 0.2558.
 
      Milestone 3. -->
 
-Didn't miss anything, so no failure stages to trace here.
+Misses: none. All five criteria met their targets in all three Before runs,
+so there is no failing criterion and no pipeline stage to attribute one to.
 
-But I'll be honest — 4/5 was too soft a target for criteria 1, 3, 4, and 5. I
-picked it because I expected at least one question to be flaky, but the corpus
-is tiny (five short guides) and well-separated (0.452 worst in-corpus distance
-vs. 0.754 best out-of-scope), so there wasn't really a failure mode that costs
-you exactly one question. It either works or it doesn't, and three identical
-5/5 runs back that up — no variance for the 4/5 buffer to actually catch.
+Because nothing fell short, the honest question is whether my targets were
+too easy. They were. Criteria 1, 3, 4 and 5 allowed one miss (4 of 5) and
+every run scored 5 of 5, so that buffer was never used. The corpus is tiny
+(five short guides) and well separated (0.452 worst in-corpus distance vs.
+0.754 best out-of-scope), so there was no failure that would cost exactly one
+question. It either works or it doesn't.
 
-If I redid it, I'd tighten criterion 1 to 5/5. It's the one that's actually
-doing generation work every run instead of just replaying a fixed cutoff or a
-pre-picked sample (that's 3 and 4), so three perfect runs there means the most.
-It's also the one most likely to catch a real miss once the corpus gets bigger
-than five documents.
+The one I would tighten is criterion 1: from "4 of 5" to "5 of 5, with the
+answer chunk in the top 3 results". That is tighter because it can fail on
+ranking, not only on presence, which the current wording cannot catch. It
+depends on retrieval across all five real questions each run, and it is the
+one most likely to catch a real miss once the corpus grows past five
+documents.
+
+One question-level failure did appear later (After run, Halden Bay run 1,
+scored fail). It is diagnosed below as a generation-stage issue.
 
 **Added after the After run: one real failure I found later.** No criterion
 was missed, but the After run (`results/run_2026-09-27_2105_after.md`) had one
