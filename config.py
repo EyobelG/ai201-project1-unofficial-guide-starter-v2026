@@ -33,7 +33,7 @@ CHUNK_OVERLAP = 120     # characters shared between neighbouring chunks
 
 # ─── Retrieval (Milestone 4) ─────────────────────────────────────────────────
 
-TOP_K = 5               # how many chunks to pull back per question
+TOP_K = 3               # how many chunks to pull back per question
 HYBRID = True           # unit 2 improvement: fuse BM25 keyword rank with vector rank
 
 # The relevance gate. If the best chunk is further away than this, the system
