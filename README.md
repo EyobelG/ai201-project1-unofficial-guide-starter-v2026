@@ -143,6 +143,20 @@ out a header-splitting approach instead of the fixed-size window. I adjusted
 the oversized-section fallback myself once I saw it was gluing paragraphs
 together wrong.
 
+**3.** In Unit 2 I asked Claude to write `store.py::_fuse_with_bm25` for the
+hybrid search improvement. Its first version could push the nearest vector
+chunk out of the top 5, which changed the gate's best distance for the
+first question (0.365 became 0.462). We caught
+that by printing best distance with `HYBRID` on and off, and I had it keep
+the top vector chunk in the result set. I then reran the full eval myself and
+committed the results file.
+
+**4.** I asked Claude to read my Verdicts and Diagnoses before I moved on. It
+found that I had written "best in-corpus" and "worst out-of-scope" backwards
+in two places, and I fixed them. It also pointed out that with no miss in
+Before, the improvement could not be a repair, so I framed it in the
+README as a test of criterion 1's exact-figure risk.
+
 ## Stretch: Metadata Filtering
 
 `store.py::search` now takes a `source` argument and passes it to Chroma as
@@ -388,17 +402,42 @@ scorer/phrasing interaction that I only saw because I ran three times.
 
 ## What's Still Broken
 
-<!-- For each criterion still missed after your fix: what you'd do about it,
-     and why you stopped where you did.
+No criterion is missed, so nothing is broken by my own standard. What is
+still weak:
 
-     "I ran out of time" is fine if it's true. Pretending nothing is left is
-     not.
+- **The scorer is brittle to formatting.** `scorer.py::judge` is a literal
+  substring match. In the After run the model wrote "10 am" instead of
+  "10am" once and the question scored fail (run 1, Halden Bay) even though
+  the retrieved chunk and the source were right. I would normalise
+  whitespace, or accept a list of forms per question. I did not change it
+  because this unit allows only the one improvement, and doing it mid-unit
+  would have changed what "Before" and "After" were measured with.
+- **The targets are soft.** Criteria 1, 3, 4 and 5 all say 4 of 5 and every
+  run came out 5 of 5. The 4/5 buffer never got tested. I would tighten
+  criterion 1 to 5 of 5, as written in Diagnoses.
+- **Hybrid search is unproven.** It did not change any pass count, and on a
+  five-document corpus I cannot tell if it would matter at scale. I would
+  test it on a bigger corpus, and log the rank of the answer chunk for every
+  question, which `run_eval.py` does not do today.
 
-     Milestone 5. -->
+I stopped here because every criterion passed, so there was nothing left that
+my own tests told me to fix, and the remaining items need either a bigger
+corpus or a second change.
 
 ## What I'd Do Differently
 
-<!-- Knowing what you know now — which of your five criteria would you write
-     differently, and why?
+I would rewrite criteria 1, 4 and 5, and drop the 4-of-5 buffer.
 
-     Milestone 5. -->
+- **Criterion 1** should be 5 of 5, and measure rank: "the answer chunk is in
+  the top 3." Retrieval is deterministic here, so a buffer of one miss only
+  hides a problem. Top 3 would also be a check hybrid search could actually move.
+- **Criterion 4** ("4 of 5 sampled chunks read as a complete thought") is
+  subjective and I sampled the same five chunks every time, so it cannot
+  vary. I would make it countable, for example "no chunk ends mid-sentence
+  across all chunks", checked by script.
+- **Criterion 5** is checked by hand against the `expects` field. I would
+  make it automatic with a check of the first cited source against a
+  `source` field per question.
+
+All three passed on the first try, which tells me they were safe, not that
+the system is excellent.
