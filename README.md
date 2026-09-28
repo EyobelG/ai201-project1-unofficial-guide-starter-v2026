@@ -184,40 +184,82 @@ guide that actually answers it best (Elder Ness), but correctly scoped.
 | 4. Sampled chunks read as a complete thought | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
 | 5. First named source actually contains the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
 
-Produced by `run_eval.py::main` and `run_eval.py::check_out_of_scope`, from
+Real output for each criterion, pasted as text from run 1 of
 `results/run_2026-09-23_2103_before.md`. Criteria 3 and 4 are one
 deterministic pass each (gate cutoff, and the 5 chunks sampled in Milestone 3),
-so the same number is repeated across the three run columns.
+so the same result stands for all three run columns.
 
-Question by question, all three runs (5/5 each time):
-
-```
-By what month do the coastal businesses begin closing and the days get short?
-  -> By November, the coastal businesses begin closing and the days are short
-     (source: guide_seasons.md).
-What is the regional hub with 180,000 people?
-  -> The regional hub with 180,000 people is Marchwood. This information
-     comes from `guide_marchwood.md`.
-How long does driving from Brightwater to Corry Vale take on a good road?
-  -> Driving from Brightwater takes 35 minutes on a good road as far as the
-     valley mouth. Source: guide_corry_vale.md
-How long is the Elder Ness shingle walk to the lighthouse?
-  -> The Elder Ness shingle walk to the lighthouse is 25 minutes long.
-     Sources: `guide_walking.md` and `guide_elder_ness.md`
-If I am going to Halden Bay in August, what time should I arrive by?
-  -> If you are going to Halden Bay in August, you should arrive before 10am
-     or plan to use the overflow lot (guide_seasons.md).
-```
-
-Out-of-scope gate (`run_eval.py::check_out_of_scope`), refused 5 of 5:
+**Criterion 1: retrieved chunk contains the answer.** Produced by
+`store.py::search`, called from `run_eval.py::main`. Question: "What is the
+regional hub with 180,000 people?" Best retrieved chunk, `guide_marchwood.md#0`,
+distance 0.4517:
 
 ```
-What is the capital of Mongolia?            best distance 0.754  refused
-How do I change the oil in a diesel engine? best distance 0.892  refused
-Who won the 1994 World Cup?                 best distance 0.899  refused
-What is the recommended dosage of ibuprofen for a headache? 0.846  refused
-How do I write a for loop in Rust?          best distance 0.813  refused
+# Marchwood
+
+Marchwood is the regional hub — 180,000 people, the junction everyone changes trains at, and a city most visitors pass through rather than stop in. That is a mistake, though an understandable one, since almost nothing of interest is near the station.
 ```
+
+**Criterion 2: every answer names a source.** Produced by
+`generate.py::answer_from_chunks`, called from `run_eval.py::main`. Run 1
+answers, verbatim:
+
+```
+By November, the coastal businesses begin closing and the days are short (source: guide_seasons.md).
+```
+
+```
+The regional hub with 180,000 people is Marchwood. This information comes from `guide_marchwood.md`.
+```
+
+```
+Driving from Brightwater takes 35 minutes on a good road as far as the valley mouth.
+
+Source: guide_corry_vale.md
+```
+
+```
+The Elder Ness shingle walk to the lighthouse is 25 minutes long.
+
+Sources: `guide_walking.md` and `guide_elder_ness.md`
+```
+
+```
+If you are going to Halden Bay in August, you should arrive before 10am or plan to use the overflow lot (guide_seasons.md).
+```
+
+**Criterion 3: gate stops out-of-corpus questions.** Produced by
+`run_eval.py::check_out_of_scope`, cutoff 0.6. Refused 5 of 5:
+
+| Out-of-scope question | Best distance | Gate |
+|---|---|---|
+| What is the capital of Mongolia? | 0.754 | refused |
+| How do I change the oil in a diesel engine? | 0.892 | refused |
+| Who won the 1994 World Cup? | 0.899 | refused |
+| What is the recommended dosage of ibuprofen for a headache? | 0.846 | refused |
+| How do I write a for loop in Rust? | 0.813 | refused |
+
+**Criterion 4: sampled chunks read as a complete thought.** Produced by
+`chunker.py::split_documents`. One of the five sampled chunks
+(`guide_corry_vale.md#6`, see Sample Chunks above), verbatim:
+
+```
+## When to go
+
+May to September. Outside those months the pub in the third village closes, the farm shop reduces its hours, and several footpaths become genuinely boggy rather than merely wet. The road is not gritted above the second village and is impassable in snow.
+```
+
+**Criterion 5: first named source actually contains the answer.** Produced by
+`generate.py::answer_from_chunks`, called from `run_eval.py::main`. Question:
+"If I am going to Halden Bay in August, what time should I arrive by?" Run 1
+answer names `guide_seasons.md` first:
+
+```
+If you are going to Halden Bay in August, you should arrive before 10am or plan to use the overflow lot (guide_seasons.md).
+```
+
+Sources retrieved for that run: guide_halden_bay.md, guide_marchwood.md,
+guide_regional_transport.md, guide_seasons.md. Best distance 0.2558.
 
 ## Verdicts
 
