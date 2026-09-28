@@ -339,6 +339,25 @@ pre-picked sample (that's 3 and 4), so three perfect runs there means the most.
 It's also the one most likely to catch a real miss once the corpus gets bigger
 than five documents.
 
+**Added after the After run: one real failure I found later.** No criterion
+was missed, but the After run (`results/run_2026-09-27_2105_after.md`) had one
+failed question, so it belongs here.
+
+- **What failed:** "If I am going to Halden Bay in August, what time should I
+  arrive by?", run 1. The scorer marked it fail. The answer was "you should
+  arrive before 10 am (source: guide_seasons.md)".
+- **Stage: generation.** Retrieval was fine. The right chunk,
+  `guide_seasons.md`, was retrieved (best distance 0.2558) and the source named
+  was correct.
+- **Mechanism:** The generation prompt lets the model phrase the answer freely,
+  so it wrote "10 am" with a space. `scorer.py::judge` is a literal substring
+  check for "before 10am", so a correct answer in different formatting failed.
+  Runs 2 and 3 wrote "10am" and passed, so the same chunk and the same prompt
+  gave different formatting across runs.
+- **What I would tighten:** the scorer (normalise whitespace) or the grounding
+  prompt (quote the figure exactly as written). I did not change either because
+  this unit allows one change, and they are outside the two improvements.
+
 ## The Improvement
 
 **What I changed:** Added hybrid search to `store.py::search`. It now pulls
