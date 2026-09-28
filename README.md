@@ -317,34 +317,74 @@ than five documents.
 
 ## The Improvement
 
-**What I changed:**
+**What I changed:** Added hybrid search to `store.py::search`. It now pulls
+the vector ranking for every chunk, builds a BM25 keyword ranking over the
+same chunks (`store.py::_fuse_with_bm25`, `rank-bm25`), and merges the two with
+reciprocal rank fusion (`1/(60+rank)` summed per chunk), then returns the top 5.
+The relevance gate still reads cosine distance, and the nearest vector chunk is
+always kept in the top 5, so `gate.py::check` sees the same best distance as
+before. `config.HYBRID` switches it on and off. Nothing else changed: same
+chunker, same corpus, same threshold, same prompt.
 
-**Why I picked it:**
-
-<!-- Connect it to a specific diagnosis above in one sentence. If you can't,
-     you picked a fix because it sounded impressive. -->
+**Why I picked it:** Diagnoses found no miss, so nothing pointed at a fix. The
+closest thing to a diagnosis is criterion 1's own rationale: my answers are
+exact figures ("35 minutes", "before 10am"), which is where a keyword match
+can help and meaning-only search can slide past. So this is a test of whether
+that risk is real, not a repair.
 
 ### Run Log — After
 
-<!-- Same format, same five criteria, three runs each.
-     `python run_eval.py --label after` -->
+From `results/run_2026-09-27_2105_after.md`. Criterion 3 is one deterministic
+pass; criterion 4 is the same five sampled chunks, since the chunker did not
+change.
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+| 1. Retrieved chunk contains the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Sampled chunks read as a complete thought | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 5. First named source actually contains the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
 
-**Did it help?**
+Real output, run 1 of the After log. Produced by `run_eval.py::main` calling
+`store.py::search` (hybrid) and `generate.py::answer_from_chunks`.
 
-<!-- Say plainly whether it did, and how you know. If it made things worse,
-     say that — a change that backfired, honestly reported, earns full credit
-     and is more interesting than one that worked. What matters is that you can
-     tell.
+Question: "How long does driving from Brightwater to Corry Vale take on a good
+road?" Retrieved chunks now put `guide_corry_vale.md` first (before, it was
+second):
 
-     Milestone 4. -->
+```
+Best distance: 0.3137 (passed the gate)
+Sources retrieved: guide_corry_vale.md, guide_kestrelford.md, guide_thornby_wells.md, guide_walking.md
+
+Driving from Brightwater to the mouth of Corry Vale takes 35 minutes on a good road, plus 20 more minutes on a poor one.
+
+Source: `guide_corry_vale.md`
+```
+
+The one scored failure, from the same file, "If I am going to Halden Bay in
+August, what time should I arrive by?", run 1:
+
+```
+If you are going to Halden Bay in August, you should arrive before 10 am (source: guide_seasons.md).
+```
+
+**Did it help?** Not in any way the criteria can see. All five criteria came
+out identical to Before, so the pass counts did not move. What did change is
+ordering. For "35 minutes" the answer chunk moved from second to first in the
+retrieved list, and for "November" the first chunk with the answer switched
+from `guide_halden_bay.md` to `guide_seasons.md`, the better source. Lower
+ranks also reshuffled: for the Marchwood question `guide_eating.md` and
+`guide_seasons.md` dropped out and other Brightwater and Pellew Sands chunks
+came in. Those swaps are noise-level on a five-document corpus.
+
+The per-question score got slightly worse: 14 of 15 pass instead of 15 of 15.
+That is not retrieval. The chunk was right and the model wrote "10 am" with a
+space, and `scorer.py::judge` is a literal substring match against "before
+10am". Runs 2 and 3 wrote "10am" and passed. I left the scorer alone because
+this unit allows one change. So my honest read is: no measurable gain from
+hybrid search on this corpus, a small cost in complexity, and one flaky
+scorer/phrasing interaction that I only saw because I ran three times.
 
 ## What's Still Broken
 
