@@ -420,6 +420,48 @@ is reliably in the top 3, not just the top 5. I will run the full test again
 with `python run_eval.py --label after2` and report the result here, whether
 or not it helps.
 
+#### Run Log — After 2 (hybrid search + top-k 3)
+
+From `results/run_2026-09-27_2122_after2.md`. Only change since After:
+`config.TOP_K` 5 to 3. Criterion 3 is one deterministic pass (5 of 5 refused,
+same distances as before); criterion 4 is unchanged since the chunker did not
+change.
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. Retrieved chunk contains the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 2. Every answer names a source | 5 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 4. Sampled chunks read as a complete thought | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+| 5. First named source actually contains the answer | 4 of 5 | 5/5 | 5/5 | 5/5 | MET |
+
+Real output from the After 2 log, run 1, produced by `run_eval.py::main`
+calling `store.py::search` and `generate.py::answer_from_chunks`. Question:
+"If I am going to Halden Bay in August, what time should I arrive by?"
+
+```
+Sources retrieved: guide_regional_transport.md, guide_seasons.md
+
+If you are going to Halden Bay in August, you should arrive before 10am.
+
+Source: guide_seasons.md
+```
+
+**Did it help?** Not on the criteria: all five came out the same as Before and
+After. I checked criterion 1 by running `store.search` directly with top-k 3.
+The answer chunk was in the top 3 for all five questions, and for four of five
+it was ranked first (for the "November" question it appears at ranks 1 and 3).
+So the answer chunk did not need ranks 4 and 5. Retrieval now hands the model 2
+to 3 chunks instead of 4 to 5, so answers cite fewer files (the Marchwood
+answer now retrieves 2 sources instead of 4).
+
+One visible difference: the Halden Bay question scored 3 of 3, where After had
+one fail ("10 am"). That is generation wording, and I do not think top-k 3
+caused it. With one run per setting I cannot tell it from noise, so I am not
+claiming it as a win. Honest read: top-k 3 is safe on this corpus and keeps the
+same accuracy, but it does not prove a gain, and it would leave less margin on
+a bigger or harder corpus.
+
 ## What's Still Broken
 
 No criterion is missed, so nothing is broken by my own standard. What is
