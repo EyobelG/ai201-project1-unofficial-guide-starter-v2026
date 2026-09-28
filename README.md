@@ -111,7 +111,7 @@ Sources retrieved: `guide_elder_ness.md`, `guide_halden_bay.md`, `guide_walking.
 **My relevance cutoff:** 0.6 (the starter default, kept as is)
 
 Ran my five questions and the five `OUT_OF_SCOPE` ones through `retrieve`,
-top-k 5. Best in-corpus distance was 0.452, worst out-of-scope was 0.754.
+top-k 5. Worst in-corpus distance was 0.452, best out-of-scope was 0.754.
 Clean gap, no overlap. 0.6 sits right in the middle of that gap already, so
 I didn't touch it.
 
@@ -276,7 +276,7 @@ guide_regional_transport.md, guide_seasons.md. Best distance 0.2558.
 |---|---|---|---|
 | 1 | Retrieved chunk contains the answer | MET | Wanted 4/5, got 5/5 all three times. I went through `run_2026-09-23_2103_before.md` and for each of the five questions checked that the actual answer text showed up in the chunk that got retrieved — it did, every run. |
 | 2 | Every answer names a source | MET | Wanted 5/5, got 5/5 all three times. Read all 15 answers (5 questions, 3 runs) and every single one ends with a `Source:` line or names the file inline. Never had to go looking for a citation. |
-| 3 | Gate stops out-of-corpus questions | MET | Wanted 4/5, got 5/5 all three times, and honestly this one's a gimme — the cutoff is fixed and the questions are fixed, so `check_out_of_scope` gives the same result every run. Best in-corpus distance was 0.452, worst out-of-scope was 0.754. That's a wide gap, not a close call. |
+| 3 | Gate stops out-of-corpus questions | MET | Wanted 4/5, got 5/5 all three times, and honestly this one's a gimme — the cutoff is fixed and the questions are fixed, so `check_out_of_scope` gives the same result every run. Worst in-corpus distance was 0.452, best out-of-scope was 0.754. That's a wide gap, not a close call. |
 | 4 | Sampled chunks read as a complete thought | MET | Wanted 4/5, got 5/5. Also deterministic — these are the same five chunks I sampled back in Milestone 3, so I just reread them and confirmed none of them cut off mid-thought. |
 | 5 | First named source actually contains the answer | MET | Wanted 4/5, got 5/5 all three times. Went question by question and checked that the source named first in the answer matches the `expects` field in `questions.py`. It lined up every time, 15 for 15. |
 
