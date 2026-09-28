@@ -410,6 +410,16 @@ this unit allows one change. So my honest read is: no measurable gain from
 hybrid search on this corpus, a small cost in complexity, and one flaky
 scorer/phrasing interaction that I only saw because I ran three times.
 
+### Stretch: Second Improvement (top-k 5 to 3)
+
+Announced before running it. For the extra-credit stretch I am making a second
+improvement from the Milestone 4 menu: changing top-k from 5 to 3
+(`config.TOP_K`), on top of hybrid search. Hybrid search changed the ordering
+of retrieved chunks but no pass counts, so this tests whether the answer chunk
+is reliably in the top 3, not just the top 5. I will run the full test again
+with `python run_eval.py --label after2` and report the result here, whether
+or not it helps.
+
 ## What's Still Broken
 
 No criterion is missed, so nothing is broken by my own standard. What is
