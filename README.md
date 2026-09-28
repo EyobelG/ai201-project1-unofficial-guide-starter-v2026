@@ -457,7 +457,7 @@ the other numbers from the three logs:
 | Criterion 3 (gate refusals) | 5/5 | 5/5 | 5/5 |
 | Criterion 5 (first source correct) | 5/5 x3 | 5/5 x3 | 5/5 x3 |
 | Scorer passes | 15/15 | 14/15 | 15/15 |
-| Sources retrieved per question | 3 to 4 | 2 to 4 | 2 to 3 |
+| Sources retrieved per question | 3 to 5 | 3 to 4 | 2 to 3 |
 
 **Did it help?** Not on the criteria: all five came out the same as Before and
 After. I checked criterion 1 by running `store.search` directly with top-k 3.
